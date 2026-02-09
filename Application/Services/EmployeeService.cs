@@ -16,6 +16,7 @@ namespace Application.Services
         Task<EmployeeDto> CreateAsync(CreateEmployeeDto dto);
         Task UpdateAsync(int id, CreateEmployeeDto dto);
         Task DeleteAsync(int id);
+        Task<EmployeeStatsDto> GetStatsAsync();
     }
     public class EmployeeService : IEmployeeService
     {
@@ -89,6 +90,45 @@ namespace Application.Services
             existing.HireDate = dto.HireDate;
 
             await _repository.UpdateAsync(existing);
+        }
+
+        public async Task<EmployeeStatsDto> GetStatsAsync()
+        {
+            var now = DateTime.Now;
+            
+            // Calcular el rango del mes actual
+            var currentMonthStart = new DateTime(now.Year, now.Month, 1);
+            var currentMonthEnd = currentMonthStart.AddMonths(1);
+            
+            // Contar contrataciones del mes actual
+            var currentMonthHires = await _repository.CountByDateRangeAsync(currentMonthStart, currentMonthEnd);
+            
+            // Calcular el rango del mes anterior
+            var previousMonthStart = currentMonthStart.AddMonths(-1);
+            var previousMonthEnd = currentMonthStart;
+            
+            // Contar contrataciones del mes anterior
+            var previousMonthHires = await _repository.CountByDateRangeAsync(previousMonthStart, previousMonthEnd);
+            
+            // Calcular tendencia
+            TrendDto? trend = null;
+            if (previousMonthHires > 0)
+            {
+                var change = currentMonthHires - previousMonthHires;
+                var percentageChange = ((decimal)change / previousMonthHires) * 100;
+                
+                trend = new TrendDto
+                {
+                    Value = Math.Abs(percentageChange),
+                    IsPositive = change >= 0
+                };
+            }
+            
+            return new EmployeeStatsDto
+            {
+                RecentHires = currentMonthHires,
+                Trend = trend
+            };
         }
 
         private static EmployeeDto MapToDto(Employee e) => new()

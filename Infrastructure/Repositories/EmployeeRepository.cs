@@ -69,5 +69,12 @@ namespace Infrastructure.Repositories
             _context.Entry(employee).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+
+        public async Task<int> CountByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Employees
+                .Where(e => e.HireDate >= startDate && e.HireDate < endDate)
+                .CountAsync();
+        }
     }
 }

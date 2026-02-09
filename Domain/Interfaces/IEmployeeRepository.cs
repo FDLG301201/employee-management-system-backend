@@ -15,5 +15,6 @@ namespace Domain.Interfaces
         Task<Employee> AddAsync(Employee employee);
         Task UpdateAsync(Employee employee);
         Task DeleteAsync(int id);
+        Task<int> CountByDateRangeAsync(DateTime startDate, DateTime endDate);
     }
 }

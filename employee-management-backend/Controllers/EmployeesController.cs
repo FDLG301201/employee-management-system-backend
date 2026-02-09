@@ -58,5 +58,12 @@ namespace employee_management_backend.Controllers
             return NoContent();
         }
 
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            var result = await _service.GetStatsAsync();
+            return Ok(result);
+        }
+
     }
 }
