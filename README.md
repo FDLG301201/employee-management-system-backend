@@ -13,6 +13,19 @@ This project follows **Clean Architecture** with clear separation of concerns:
 └── employee-management-backend/   # API layer (Controllers, middleware)
 ```
 
+### Azure Deployment Architecture
+
+```mermaid
+graph TD
+    User[Usuario] -->|HTTPS| CDN[Azure Static Web App Frontend]
+    CDN -->|API Calls| AppService[Azure App Service Backend API]
+    AppService -->|Read/Write| SQL[Azure SQL Database]
+    AppService -.->|Logs & Metrics| AppInsights[Application Insights]
+    AppService -.->|On Error 500| EmailMock[Email Alert Service Mock]
+    GitHub[GitHub Repo] -->|CI/CD Action| CDN
+    GitHub -->|CI/CD Action| AppService
+```
+
 ## 🚀 Features
 
 - **CRUD Operations**: Create, Read, Update, and Delete employee records
@@ -177,6 +190,33 @@ For production deployment, configure the following in Azure App Service or your 
 1. Run the application: `dotnet run`
 2. Navigate to Swagger UI: `https://localhost:7xxx/swagger`
 3. Test each endpoint using the "Try it out" feature
+
+### Testing Error Handling & Alert System
+
+To test the exception handling middleware and email alert system, use the dedicated force-error endpoint:
+
+```bash
+GET /api/employees/force-error
+```
+
+This endpoint will:
+- ✅ Throw a simulated critical error (HTTP 500)
+- ✅ Trigger the exception handling middleware
+- ✅ Log the error to Application Insights (if configured)
+- ✅ Send a mock email alert
+
+**Example using cURL:**
+```bash
+curl -X GET "https://localhost:7xxx/api/employees/force-error"
+```
+
+**Expected Response:**
+```json
+{
+  "error": "🔥 PRUEBA TÉCNICA: Simulando un Error Crítico 500 para validar el sistema de alertas.",
+  "timestamp": "2024-02-10T12:00:00Z"
+}
+```
 
 ### Future Enhancements
 
