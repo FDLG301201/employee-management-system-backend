@@ -20,21 +20,22 @@ jobs:
         with:
           dotnet-version: '8.x'
 
-      # CAMBIO CRÍTICO: Publicar directamente desde la carpeta del proyecto
-      - name: dotnet publish
-        run: dotnet publish employee-management-backend/employee-management-backend.csproj -c Release -o ${{github.workspace}}/myapp
+      - name: Build with dotnet
+        run: dotnet build employee-management-backend/employee-management-backend.csproj --configuration Release
 
-      # Verificar qué archivos se generaron
+      - name: dotnet publish
+        run: dotnet publish employee-management-backend/employee-management-backend.csproj -c Release -o ./published
+
       - name: List published files
         run: |
-          echo "Contents of myapp folder:"
-          ls -la ${{github.workspace}}/myapp
+          echo "Contents of published folder:"
+          ls -la ./published
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{github.workspace}}/myapp
+          path: ./published
 
   deploy:
     runs-on: ubuntu-latest
@@ -42,21 +43,22 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    # QUITA ESTA SECCIÓN COMPLETA:
+    # environment:
+    #   name: 'Production'
+    #   url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./published
 
-      # Verificar qué se descargó
       - name: List downloaded files
         run: |
           echo "Downloaded files:"
-          ls -la
+          ls -la ./published
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -71,4 +73,4 @@ jobs:
         with:
           app-name: 'employee-management-system'
           slot-name: 'Production'
-          package: .
+          package: ./published
