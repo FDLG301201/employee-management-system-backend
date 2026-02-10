@@ -23,11 +23,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Application Insights - Solo si existe la Connection String en configuración
-var appInsightsConnectionString = builder.Configuration.GetConnectionString("ApplicationInsights");
-if (!string.IsNullOrEmpty(appInsightsConnectionString))
-{
-    builder.Services.AddApplicationInsightsTelemetry();
-}
+//var appInsightsConnectionString = builder.Configuration.GetConnectionString("ApplicationInsights");
+//if (!string.IsNullOrEmpty(appInsightsConnectionString))
+//{
+//    builder.Services.AddApplicationInsightsTelemetry();
+//}
+
+builder.Services.AddApplicationInsightsTelemetry();
+
 
 //Inyeccion de Dependencias
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
