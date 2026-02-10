@@ -65,5 +65,15 @@ namespace employee_management_backend.Controllers
             return Ok(result);
         }
 
+
+        //THIS ENDPOINT IS FOR TESTING THE EXCEPTION HANDLING MIDDLEWARE, IT WILL ALWAYS THROW AN EXCEPTION
+        // GET: api/employees/force-error
+        [HttpGet("force-error")]
+        public IActionResult ForceError()
+        {
+            // Esto disparará tu Middleware -> Logueará el error -> Disparará el Mock de Email
+            throw new Exception("🔥 PRUEBA TÉCNICA: Simulando un Error Crítico 500 para validar el sistema de alertas.");
+        }
+
     }
 }
