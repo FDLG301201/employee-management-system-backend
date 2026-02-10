@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP.Net Core app to Azure Web App - employee-management-system
 
 on:
@@ -13,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -24,30 +21,45 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build employee-management-backend --configuration Release
+        run: dotnet build employee-management-backend/employee-management-backend.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish employee-management-backend -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish employee-management-backend/employee-management-backend.csproj -c Release -o ./published
+
+      - name: List published files
+        run: |
+          echo "Contents of published folder:"
+          ls -la ./published
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ./published
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
+    # QUITA ESTA SECCIÓN COMPLETA:
+    # environment:
+    #   name: 'Production'
+    #   url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+          path: ./published
+
+      - name: List downloaded files
+        run: |
+          echo "Downloaded files:"
+          ls -la ./published
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -61,6 +73,4 @@ jobs:
         with:
           app-name: 'employee-management-system'
           slot-name: 'Production'
-          package: .
-
-          
+          package: ./published
