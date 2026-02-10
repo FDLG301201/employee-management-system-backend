@@ -26,14 +26,16 @@ jobs:
       - name: Build with dotnet
         run: dotnet build employee-management-backend --configuration Release
 
+      # CAMBIO 1: Publicamos en una carpeta local "./published" en lugar de env.DOTNET_ROOT
       - name: dotnet publish
-        run: dotnet publish employee-management-backend -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish employee-management-backend -c Release -o ./published
 
+      # CAMBIO 2: Subimos esa carpeta exacta
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ./published
 
   deploy:
     runs-on: ubuntu-latest
@@ -43,10 +45,12 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
+      # CAMBIO 3: Descargamos explícitamente en la carpeta "./published"
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./published
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -55,12 +59,11 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4E0B68E6342B4EC3969A7F29692AA943 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9F77685EDE60447394C38BCCB06FB4E9 }}
 
+      # CAMBIO 4: Le decimos a Azure que despliegue LO QUE HAY DENTRO de "./published"
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'employee-management-system'
           slot-name: 'Production'
-          package: .
-
-          
+          package: ./published
